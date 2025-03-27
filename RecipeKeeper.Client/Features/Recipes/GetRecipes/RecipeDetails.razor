@@ -1,0 +1,181 @@
+﻿@page "/recipes/{RecipeId:int}"
+@using RecipeKeeper.Client.Features.Recipes.DeleteRecipe
+
+@if (!Loading && Recipe is not null)
+{
+    <MudContainer MaxWidth="MaxWidth.Medium">
+        <MudExpansionPanels MultiExpansion="true">
+            <MudExpansionPanel TitleContent="@RecipeHeader">
+                <MudStack>
+                    <MudDivider Class="mb-2" />
+                    @if (Recipe.Author is not null)
+                    {
+                        <MudText Typo="Typo.body1">@($"Author: {Recipe.Author}")</MudText>
+                    }
+                    @if (Recipe.Difficulty is not null)
+                    {
+                        <MudText Typo="Typo.body1">@($"Difficulty: {Recipe.Difficulty}")</MudText>
+                    }
+                    @if (Recipe.EstimatedDuration is not null)
+                    {
+                        <MudText Typo="Typo.body1">@($"Time: {Recipe.EstimatedDuration}")</MudText>
+                    }
+                    @if (Recipe.Description is not null)
+                    {
+                        <MudText Typo="Typo.body1">@Recipe.Description</MudText>
+                    }
+                </MudStack>
+            </MudExpansionPanel>
+            <MudExpansionPanel TitleContent="@IngredientHeader">
+                <MudDivider Class="mb-2" />
+                @foreach (var ingredient in Recipe.Ingredients)
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                        <MudIconButton Icon="@(GetIcon(CompletedIngredients, ingredient.Id))" Size="Size.Medium"
+                            OnClick="@(() => ToggleIngredient(ingredient.Id))" />
+                        <MudText Typo="Typo.body2"
+                            Style="@(CompletedIngredients.Contains(ingredient.Id) ? "text-decoration: line-through" : "")">
+                            @ingredient.Description</MudText>
+                    </MudStack>
+                }
+            </MudExpansionPanel>
+            <MudExpansionPanel TitleContent="@InstructionHeader">
+                <MudDivider Class="mb-2" />
+                @foreach (var instruction in Recipe.Instructions)
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                        <MudIconButton Icon="@(GetIcon(CompletedInstructions, instruction.Id))" Size="Size.Medium"
+                            OnClick="@(() => ToggleInstruction(instruction.Id))" />
+                        <MudText Typo="Typo.body2"
+                            Style="@(CompletedInstructions.Contains(instruction.Id) ? "text-decoration: line-through" : "")">
+                            @instruction.Description</MudText>
+                    </MudStack>
+                }
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </MudContainer>
+}
+
+
+@code {
+    [Parameter]
+    public int RecipeId { get; set; }
+
+    [Inject]
+    public required RecipeService RecipeService { get; set; }
+
+    [Inject]
+    public required ISnackbar Snackbar { get; set; }
+
+    [Inject]
+    public required IDialogService DialogService { get; set; }
+
+    [Inject]
+    public required NavigationManager NavigationManager { get; set; }
+
+    private HashSet<int> CompletedIngredients { get; set; } = [];
+    private HashSet<int> CompletedInstructions { get; set; } = [];
+
+    private RenderFragment RecipeHeader =>
+    @<MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudText>
+            @Recipe?.Name
+        </MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Edit" />
+        <MudIconButton Icon="@Icons.Material.Filled.Delete" Class="mr-4" OnClick="OnRecipeDeleted" />
+
+    </MudStack>;
+
+    private RenderFragment InstructionHeader =>
+    @<MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudText>
+            Instructions
+        </MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Class="mr-4" />
+    </MudStack>;
+
+    private RenderFragment IngredientHeader =>
+    @<MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudText>
+            Ingredients
+        </MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Class="mr-4" />
+    </MudStack>;
+
+    private string GetIcon(HashSet<int> ids, int id) =>
+    ids.Contains(id)
+    ? Icons.Material.Filled.Clear
+    : Icons.Material.Filled.Check;
+
+    private GetRecipeResponse? Recipe { get; set; }
+
+    private bool Loading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Loading = true;
+        await RecipeService.GetRecipeAsync(RecipeId)
+        .EffectAsync(
+        recipe =>
+        {
+            Recipe = recipe;
+            InvokeAsync(StateHasChanged);
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
+        Loading = false;
+    }
+
+    private void ToggleIngredient(int id)
+    {
+        if (CompletedIngredients.Contains(id))
+        {
+            CompletedIngredients.Remove(id);
+        }
+        else
+        {
+            CompletedIngredients.Add(id);
+        }
+    }
+
+    private void ToggleInstruction(int id)
+    {
+        if (CompletedInstructions.Contains(id))
+        {
+            CompletedInstructions.Remove(id);
+        }
+        else
+        {
+            CompletedInstructions.Add(id);
+        }
+    }
+
+    private async Task OnRecipeDeleted()
+    {
+        if (Recipe is null) return;
+
+        // Show a modal to confirm
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<DeleteRecipeDialog>($"Delete '{Recipe.Name}'?", options);
+        var result = await dialog.Result;
+        if (result is null || result.Canceled || result.Data is null || (bool)result.Data == false) return;
+
+        // Delete Recipe
+        await RecipeService
+        .DeleteRecipeAsync(Recipe.Id)
+        .EffectAsync(
+        _ =>
+        {
+            NavigationManager.NavigateTo("/");
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
+    }
+}

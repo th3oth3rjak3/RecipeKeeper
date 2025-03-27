@@ -1,0 +1,39 @@
+﻿<MudCard>
+    <MudCardHeader>
+        <MudText Typo="Typo.h5">Search Recipes</MudText>
+    </MudCardHeader>
+    <MudDivider />
+    <MudCardContent>
+        <MudTextField T="string" @bind-Text="@QueryString" Label="Search Query" Clearable="true"
+            ClearIcon="@Icons.Material.Filled.Clear" />
+        <MudCheckBox Class="mt-5" Style="max-width: fit-content;" Label="Include Ingredients?"
+            @bind-Value="@IncludeIngredients" />
+        <MudCheckBox Style="max-width: fit-content;" Label="Include Instructions?" @bind-Value="@IncludeInstructions" />
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Text" OnClick="HandleSearch" FullWidth="true">
+            Search
+        </MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public required EventCallback<SearchRecipeResult> OnSearch { get; set; }
+
+    private string? QueryString { get; set; }
+    private bool IncludeIngredients { get; set; }
+    private bool IncludeInstructions { get; set; }
+
+    private async Task HandleSearch()
+    {
+        var result = new SearchRecipeResult
+        {
+            QueryString = QueryString,
+            IncludeIngredients = IncludeIngredients,
+            IncludeInstructions = IncludeInstructions
+        };
+
+        await OnSearch.InvokeAsync(result);
+    }
+}

@@ -1,0 +1,35 @@
+﻿<MudCard>
+    <MudCardHeader>
+        <MudText Typo="Typo.h5">
+            @Recipe.Name
+        </MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Href="@($"/recipes/{Recipe.Id}")" />
+    </MudCardHeader>
+    <MudDivider />
+    <MudCardContent>
+        <MudStack>
+            @if (Recipe.Author is not null)
+            {
+                <MudText Typo="Typo.body1">@($"Author: {Recipe.Author}")</MudText>
+            }
+            @if (Recipe.Difficulty is not null)
+            {
+                <MudText Typo="Typo.body1">@($"Difficulty: {Recipe.Difficulty}")</MudText>
+            }
+            @if (Recipe.EstimatedDuration is not null)
+            {
+                <MudText Typo="Typo.body1">@($"Time: {Recipe.EstimatedDuration}")</MudText>
+            }
+            @if (Recipe.Description is not null)
+            {
+                <MudText Typo="Typo.body1">@Recipe.Description</MudText>
+            }
+        </MudStack>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public required SearchRecipeResponse Recipe { get; set; }
+}

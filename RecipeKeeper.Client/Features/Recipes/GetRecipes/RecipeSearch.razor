@@ -1,0 +1,48 @@
+﻿@page "/";
+
+<MudContainer MaxWidth="MaxWidth.Small">
+    <MudStack Class="mb-5">
+        <SearchRecipeCard OnSearch="HandleSearch" />
+        @if (hasSearched && Recipes.Count == 0)
+        {
+            <MudCard>
+                <MudCardContent>
+                    <MudText Typo="Typo.body1" Align="Align.Center">No Recipes Found</MudText>
+                </MudCardContent>
+            </MudCard>
+        }
+        @foreach (var recipe in Recipes)
+        {
+            <RecipeCard Recipe="@recipe" />
+        }
+
+    </MudStack>
+</MudContainer>
+
+@code {
+    [Inject]
+    public required ISnackbar Snackbar { get; set; }
+
+    [Inject]
+    public required RecipeService RecipeService { get; set; }
+
+    private List<SearchRecipeResponse> Recipes { get; set; } = [];
+    private bool hasSearched = false;
+
+    private async Task HandleSearch(SearchRecipeResult result)
+    {
+        await RecipeService
+        .SearchRecipesAsync(result.QueryString, result.IncludeIngredients, result.IncludeInstructions)
+        .EffectAsync(
+        recipes =>
+        {
+            Recipes = recipes;
+            hasSearched = true;
+            InvokeAsync(StateHasChanged);
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
+    }
+}

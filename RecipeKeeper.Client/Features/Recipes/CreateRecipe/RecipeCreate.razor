@@ -1,0 +1,62 @@
+﻿@page "/recipes/new"
+
+<MudContainer MaxWidth="MaxWidth.Small">
+    <EditForm Model="@createRecipeRequest" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h5">Create Recipe</MudText>
+            </MudCardHeader>
+            <MudDivider />
+            <MudCardContent>
+                <MudTextField Label="Recipe Name" @bind-Value="createRecipeRequest.Name"
+                    For="@(() => createRecipeRequest.Name)" />
+                <MudTextField Label="Author" Class="mt-3" @bind-Value="createRecipeRequest.Author"
+                    For="@(() => createRecipeRequest.Author)" />
+                <MudSelect Label="Difficulty" T="string" Class="mt-3" @bind-Value="createRecipeRequest.Difficulty"
+                    Clearable>
+                    <MudSelectItem Value="@("Easy")">Easy</MudSelectItem>
+                    <MudSelectItem Value="@("Medium")">Medium</MudSelectItem>
+                    <MudSelectItem Value="@("Hard")">Hard</MudSelectItem>
+                </MudSelect>
+                <MudTextField Label="Time" Class="mt-3" @bind-Value="createRecipeRequest.EstimatedDuration"
+                    For="@(() => createRecipeRequest.EstimatedDuration)" />
+                <MudTextField Label="Description" Class="mt-3" @bind-Value="createRecipeRequest.Description" AutoGrow
+                    For="@(() => createRecipeRequest.Description)" />
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">
+                    Create
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </EditForm>
+</MudContainer>
+
+@code {
+    [Inject]
+    public required RecipeService RecipeService { get; set; }
+
+    [Inject]
+    public required NavigationManager NavigationManager { get; set; }
+
+    [Inject]
+    public required ISnackbar Snackbar { get; set; }
+
+    private CreateRecipeRequest createRecipeRequest = new();
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        await RecipeService
+        .CreateRecipeAsync(createRecipeRequest)
+        .EffectAsync(
+        created =>
+        {
+            NavigationManager.NavigateTo($"/recipes/{created.Id}");
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
+    }
+}
