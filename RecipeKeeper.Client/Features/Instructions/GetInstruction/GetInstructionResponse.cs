@@ -1,6 +1,6 @@
 namespace RecipeKeeper.Client.Features.Instructions.GetInstruction;
 
-public class GetInstructionResponse
+public class GetInstructionResponse : IInstruction
 {
     public required int Id { get; set; }
     public required int Position { get; set; }

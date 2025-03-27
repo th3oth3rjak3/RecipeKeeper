@@ -1,9 +1,9 @@
-using RecipeKeeper.Client.Features.Ingredients.GetIngredient;
-using RecipeKeeper.Client.Features.Instructions.GetInstruction;
+using RecipeKeeper.Client.Features.Ingredients;
+using RecipeKeeper.Client.Features.Instructions;
 
 namespace RecipeKeeper.Client.Features.Recipes.UpdateRecipe;
 
-public class UpdateRecipeResponse
+public class UpdateRecipeResponse : IRecipe
 {
     public required int Id { get; set; }
     public required string Name { get; set; }
@@ -11,6 +11,6 @@ public class UpdateRecipeResponse
     public string? Author { get; set; }
     public string? Difficulty { get; set; }
     public string? EstimatedDuration { get; set; }
-    public List<GetIngredientResponse> Ingredients { get; set; } = [];
-    public List<GetInstructionResponse> Instructions { get; set; } = [];
+    public List<IIngredient> Ingredients { get; set; } = [];
+    public List<IInstruction> Instructions { get; set; } = [];
 }
