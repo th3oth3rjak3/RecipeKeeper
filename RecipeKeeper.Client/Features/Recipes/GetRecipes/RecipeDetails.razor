@@ -8,35 +8,41 @@
 @using RecipeKeeper.Client.Features.Recipes.DeleteRecipe
 @using RecipeKeeper.Client.Features.Recipes.UpdateRecipe
 
-@if (!Loading && Recipe is not null){
+@if (!Loading && Recipe is not null)
+{
     <MudContainer MaxWidth="MaxWidth.Medium">
         <MudExpansionPanels MultiExpansion="true">
             <MudExpansionPanel TitleContent="@RecipeHeader">
                 <MudStack>
                     <MudDivider Class="mb-2"/>
-                    @if (Recipe.Author is not null){
+                    @if (Recipe.Author is not null)
+                    {
                         <MudText Typo="Typo.body1">@($"Author: {Recipe.Author}")</MudText>
                     }
-                    @if (Recipe.Difficulty is not null){
+                    @if (Recipe.Difficulty is not null)
+                    {
                         <MudText Typo="Typo.body1">@($"Difficulty: {Recipe.Difficulty}")</MudText>
                     }
-                    @if (Recipe.EstimatedDuration is not null){
+                    @if (Recipe.EstimatedDuration is not null)
+                    {
                         <MudText Typo="Typo.body1">@($"Time: {Recipe.EstimatedDuration}")</MudText>
                     }
-                    @if (Recipe.Description is not null){
+                    @if (Recipe.Description is not null)
+                    {
                         <MudText Typo="Typo.body1">@Recipe.Description</MudText>
                     }
                 </MudStack>
             </MudExpansionPanel>
             <MudExpansionPanel TitleContent="@IngredientHeader">
                 <MudDivider Class="mb-2"/>
-                @foreach (var ingredient in Recipe.Ingredients){
+                @foreach (var ingredient in Recipe.Ingredients)
+                {
                     <MudStack Row="true" AlignItems="AlignItems.Center">
                         <MudIconButton Icon="@(GetIcon(CompletedIngredients, ingredient.Id))" Size="Size.Medium"
                                        OnClick="@(() => ToggleIngredient(ingredient.Id))"/>
                         <MudText Typo="Typo.body2"
                                  Style="@(CompletedIngredients.Contains(ingredient.Id) ? "text-decoration: line-through" : "")">
-                            @ingredient.Description</MudText>
+                            @($"{ingredient.Position}. {ingredient.Description}")</MudText>
                         <MudSpacer/>
                         <MudStack Row="true">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
@@ -49,13 +55,14 @@
             </MudExpansionPanel>
             <MudExpansionPanel TitleContent="@InstructionHeader">
                 <MudDivider Class="mb-2"/>
-                @foreach (var instruction in Recipe.Instructions){
+                @foreach (var instruction in Recipe.Instructions)
+                {
                     <MudStack Row="true" AlignItems="AlignItems.Center">
                         <MudIconButton Icon="@(GetIcon(CompletedInstructions, instruction.Id))" Size="Size.Medium"
                                        OnClick="@(() => ToggleInstruction(instruction.Id))"/>
                         <MudText Typo="Typo.body2"
                                  Style="@(CompletedInstructions.Contains(instruction.Id) ? "text-decoration: line-through" : "")">
-                            @instruction.Description</MudText>
+                            @($"{instruction.Position}. {instruction.Description}")</MudText>
                         <MudSpacer/>
                         <MudStack Row="true">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
@@ -139,11 +146,13 @@
         Loading = true;
         await RecipeService.GetRecipeAsync(RecipeId)
             .EffectAsync(
-            recipe => {
+            recipe =>
+            {
                 Recipe = recipe;
                 InvokeAsync(StateHasChanged);
             },
-            err => {
+            err =>
+            {
                 Snackbar.Add(err.Message, Severity.Error);
             });
         Loading = false;
@@ -151,14 +160,16 @@
 
     private void ToggleIngredient(int id)
     {
-        if (!CompletedIngredients.Add(id)){
+        if (!CompletedIngredients.Add(id))
+        {
             CompletedIngredients.Remove(id);
         }
     }
 
     private void ToggleInstruction(int id)
     {
-        if (!CompletedInstructions.Add(id)){
+        if (!CompletedInstructions.Add(id))
+        {
             CompletedInstructions.Remove(id);
         }
     }
@@ -168,7 +179,7 @@
         if (Recipe is null) return;
 
         // Show a modal to confirm
-        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var dialog = await DialogService.ShowAsync<DeleteRecipeDialog>($"Delete '{Recipe.Name}'?", options);
         var result = await dialog.Result;
         if (result is null || result.Canceled || result.Data is null || (bool)result.Data == false) return;
@@ -177,10 +188,12 @@
         await RecipeService
             .DeleteRecipeAsync(Recipe.Id)
             .EffectAsync(
-            _ => {
+            _ =>
+            {
                 NavigationManager.NavigateTo("/");
             },
-            err => {
+            err =>
+            {
                 Snackbar.Add(err.Message, Severity.Error);
             });
     }
@@ -189,7 +202,7 @@
     {
         if (Recipe is null) return;
 
-        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var parameters = new DialogParameters<UpdateRecipeDialog>
         {
             { x => x.Recipe, Recipe },
@@ -201,10 +214,12 @@
         var data = (UpdateRecipeRequest)result.Data;
         await RecipeService.UpdateRecipeAsync(Recipe.Id, data)
             .EffectAsync(
-            ok => {
+            ok =>
+            {
                 Recipe = ok;
             },
-            err => {
+            err =>
+            {
                 Snackbar.Add(err.Message, Severity.Error);
             });
     }
@@ -212,8 +227,12 @@
     private async Task AddInstruction()
     {
         if (Recipe is null) return;
-        var options = new DialogOptions { CloseOnEscapeKey = true };
-        var dialog = await DialogService.ShowAsync<CreateInstructionDialog>("Create Instruction", options);
+        var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
+        var parameters = new DialogParameters<CreateInstructionDialog>
+        {
+            { x => x.NextPosition, Recipe.Instructions.Max(i => i.Position) + 1 },
+        };
+        var dialog = await DialogService.ShowAsync<CreateInstructionDialog>("Create Instruction", parameters, options);
         var result = await dialog.Result;
         if (result is null || result.Canceled || result.Data is null) return;
         var data = (CreateInstructionRequest)result.Data;
@@ -221,12 +240,14 @@
         await InstructionService
             .CreateInstructionAsync(Recipe.Id, data)
             .EffectAsync(
-            instruction => {
+            instruction =>
+            {
                 Recipe.Instructions.Add(instruction);
                 Recipe.Instructions = Recipe.Instructions.OrderBy(i => i.Position).ToList();
                 InvokeAsync(StateHasChanged);
             },
-            err => {
+            err =>
+            {
                 Snackbar.Add(err.Message, Severity.Error);
             });
     }
@@ -234,8 +255,12 @@
     private async Task AddIngredient()
     {
         if (Recipe is null) return;
-        var options = new DialogOptions { CloseOnEscapeKey = true };
-        var dialog = await DialogService.ShowAsync<CreateIngredientDialog>("Create Ingredient", options);
+        var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
+        var parameters = new DialogParameters<CreateIngredientDialog>
+        {
+            { x => x.NextPosition, Recipe.Ingredients.Max(i => i.Position) + 1 },
+        };
+        var dialog = await DialogService.ShowAsync<CreateIngredientDialog>("Create Ingredient", parameters, options);
         var result = await dialog.Result;
         if (result is null || result.Canceled || result.Data is null) return;
         var data = (CreateIngredientRequest)result.Data;
@@ -243,12 +268,14 @@
         await IngredientService
             .CreateIngredientAsync(Recipe.Id, data)
             .EffectAsync(
-            ingredient => {
+            ingredient =>
+            {
                 Recipe.Ingredients.Add(ingredient);
                 Recipe.Ingredients = Recipe.Ingredients.OrderBy(i => i.Position).ToList();
                 InvokeAsync(StateHasChanged);
             },
-            err => {
+            err =>
+            {
                 Snackbar.Add(err.Message, Severity.Error);
             });
     }
@@ -256,7 +283,7 @@
     private async Task UpdateIngredient(IngredientResponse ingredient)
     {
         if (Recipe is null) return;
-        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var parameters = new DialogParameters<UpdateIngredientDialog>
         {
             { x => x.Ingredient, ingredient },
@@ -269,13 +296,15 @@
         await IngredientService
             .UpdateIngredientAsync(Recipe.Id, ingredient.Id, data)
             .EffectAsync(
-            updatedIngredient => {
+            updatedIngredient =>
+            {
                 Recipe.Ingredients.Remove(ingredient);
                 Recipe.Ingredients.Add(updatedIngredient);
                 Recipe.Ingredients = Recipe.Ingredients.OrderBy(i => i.Position).ToList();
                 InvokeAsync(StateHasChanged);
             },
-            err => {
+            err =>
+            {
                 Snackbar.Add(err.Message, Severity.Error);
             });
 
@@ -284,7 +313,7 @@
     private async Task UpdateInstruction(InstructionResponse instruction)
     {
         if (Recipe is null) return;
-        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var parameters = new DialogParameters<UpdateInstructionDialog>
         {
             { x => x.Instruction, instruction },
@@ -297,13 +326,15 @@
         await InstructionService
             .UpdateInstructionAsync(Recipe.Id, instruction.Id, data)
             .EffectAsync(
-            updatedInstruction => {
+            updatedInstruction =>
+            {
                 Recipe.Instructions.Remove(instruction);
                 Recipe.Instructions.Add(updatedInstruction);
                 Recipe.Instructions = Recipe.Instructions.OrderBy(i => i.Position).ToList();
                 InvokeAsync(StateHasChanged);
             },
-            err => {
+            err =>
+            {
                 Snackbar.Add(err.Message, Severity.Error);
             });
     }
@@ -313,7 +344,7 @@
         if (Recipe is null) return;
 
         // Show a modal to confirm
-        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var dialog = await DialogService.ShowAsync<DeleteIngredientDialog>("Delete Ingredient?", options);
         var result = await dialog.Result;
         if (result is null || result.Canceled || result.Data is null || (bool)result.Data == false) return;
@@ -322,11 +353,13 @@
         await IngredientService
             .DeleteIngredientAsync(Recipe.Id, ingredient.Id)
             .EffectAsync(
-            _ => {
+            _ =>
+            {
                 Recipe.Ingredients.Remove(ingredient);
                 InvokeAsync(StateHasChanged);
             },
-            err => {
+            err =>
+            {
                 Snackbar.Add(err.Message, Severity.Error);
             });
     }
@@ -336,7 +369,7 @@
         if (Recipe is null) return;
 
         // Show a modal to confirm
-        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var dialog = await DialogService.ShowAsync<DeleteInstructionDialog>("Delete Instruction?", options);
         var result = await dialog.Result;
         if (result is null || result.Canceled || result.Data is null || (bool)result.Data == false) return;
@@ -345,11 +378,13 @@
         await InstructionService
             .DeleteInstructionAsync(Recipe.Id, instruction.Id)
             .EffectAsync(
-            _ => {
+            _ =>
+            {
                 Recipe.Instructions.Remove(instruction);
                 InvokeAsync(StateHasChanged);
             },
-            err => {
+            err =>
+            {
                 Snackbar.Add(err.Message, Severity.Error);
             });
     }

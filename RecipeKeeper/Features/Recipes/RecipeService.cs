@@ -13,7 +13,8 @@ namespace RecipeKeeper.Features.Recipes;
 ///     The service used to handle recipe requests.
 /// </summary>
 /// <param name="context">The database context.</param>
-public class RecipeService(RecipeKeeperContext context) {
+public class RecipeService(RecipeKeeperContext context)
+{
     /// <summary>
     ///     Get a recipe by its id.
     /// </summary>
@@ -23,8 +24,8 @@ public class RecipeService(RecipeKeeperContext context) {
         await TryAsync(() =>
             context
                 .Recipes
-                .Include(recipe => recipe.Ingredients)
-                .Include(recipe => recipe.Instructions)
+                .Include(recipe => recipe.Ingredients.OrderBy(i => i.Position))
+                .Include(recipe => recipe.Instructions.OrderBy(i => i.Position))
                 .Where(recipe => recipe.Id == id)
                 .FirstAsync()
                 .PipeAsync(recipe => recipe.ToResponse()));
@@ -42,14 +43,17 @@ public class RecipeService(RecipeKeeperContext context) {
         bool? includeIngredients,
         bool? includeInstructions
     ) =>
-        await TryAsync(async () => {
-            if (string.IsNullOrWhiteSpace(query)){
+        await TryAsync(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
                 return context.Recipes.Select(recipe => recipe.ToSearchResponse()).ToList();
             }
 
             var recipeIds = new HashSet<int>();
 
-            if (includeIngredients == true){
+            if (includeIngredients == true)
+            {
                 var idsFromIngredients = await context
                     .Ingredients
                     .AsNoTracking()
@@ -64,7 +68,8 @@ public class RecipeService(RecipeKeeperContext context) {
                 idsFromIngredients.ForEach(id => recipeIds.Add(id));
             }
 
-            if (includeInstructions == true){
+            if (includeInstructions == true)
+            {
                 var idsFromInstructions = await context
                     .Instructions
                     .AsNoTracking()
@@ -92,7 +97,6 @@ public class RecipeService(RecipeKeeperContext context) {
 
             idsFromRecipes.ForEach(id => recipeIds.Add(id));
 
-
             return context.Recipes.Where(recipe => recipeIds.Contains(recipe.Id)).Select(recipe => recipe.ToSearchResponse()).ToList();
         });
 
@@ -102,7 +106,8 @@ public class RecipeService(RecipeKeeperContext context) {
     /// <param name="request">The properties of the recipe to be created.</param>
     /// <returns>The created recipe or an exception.</returns>
     public async Task<Result<RecipeResponse, Exception>> CreateRecipeAsync(CreateRecipeRequest request) =>
-        await TryAsync(async () => {
+        await TryAsync(async () =>
+        {
             var recipe = request.ToRecipe();
             context.Recipes.Add(recipe);
             await context.SaveChangesAsync();
@@ -121,7 +126,8 @@ public class RecipeService(RecipeKeeperContext context) {
     /// <param name="request">The properties of the request to be updated.</param>
     /// <returns>The updated recipe or an exception.</returns>
     public async Task<Result<RecipeResponse, Exception>> UpdateRecipeAsync(int id, UpdateRecipeRequest request) =>
-        await TryAsync(async () => {
+        await TryAsync(async () =>
+        {
             var found = await context.Recipes.Where(recipe => recipe.Id == id).FirstAsync();
             context.Entry(found).CurrentValues.SetValues(request);
             await context.SaveChangesAsync();
@@ -142,7 +148,8 @@ public class RecipeService(RecipeKeeperContext context) {
     /// </summary>
     /// <param name="id">The id of the recipe.</param>
     public async Task<Result<Unit, Exception>> DeleteRecipeAsync(int id) =>
-        await TryAsync(async () => {
+        await TryAsync(async () =>
+        {
             var foundRecipe = await context.Recipes.Where(recipe => recipe.Id == id).FirstAsync();
             context.Recipes.Remove(foundRecipe);
             await context.SaveChangesAsync();

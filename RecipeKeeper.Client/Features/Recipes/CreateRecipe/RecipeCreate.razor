@@ -2,30 +2,31 @@
 
 <MudContainer MaxWidth="MaxWidth.Small">
     <EditForm Model="@createRecipeRequest" OnValidSubmit="OnValidSubmit">
-        <DataAnnotationsValidator />
+        <DataAnnotationsValidator/>
         <MudCard>
             <MudCardHeader>
                 <MudText Typo="Typo.h5">Create Recipe</MudText>
             </MudCardHeader>
-            <MudDivider />
+            <MudDivider/>
             <MudCardContent>
                 <MudTextField Label="Recipe Name" @bind-Value="createRecipeRequest.Name"
-                    For="@(() => createRecipeRequest.Name)" />
+                              For="@(() => createRecipeRequest.Name)"/>
                 <MudTextField Label="Author" Class="mt-3" @bind-Value="createRecipeRequest.Author"
-                    For="@(() => createRecipeRequest.Author)" />
+                              For="@(() => createRecipeRequest.Author)"/>
                 <MudSelect Label="Difficulty" T="string" Class="mt-3" @bind-Value="createRecipeRequest.Difficulty"
-                    Clearable>
+                           Clearable>
                     <MudSelectItem Value="@("Easy")">Easy</MudSelectItem>
                     <MudSelectItem Value="@("Medium")">Medium</MudSelectItem>
                     <MudSelectItem Value="@("Hard")">Hard</MudSelectItem>
                 </MudSelect>
                 <MudTextField Label="Time" Class="mt-3" @bind-Value="createRecipeRequest.EstimatedDuration"
-                    For="@(() => createRecipeRequest.EstimatedDuration)" />
+                              For="@(() => createRecipeRequest.EstimatedDuration)"/>
                 <MudTextField Label="Description" Class="mt-3" @bind-Value="createRecipeRequest.Description" AutoGrow
-                    For="@(() => createRecipeRequest.Description)" />
+                              For="@(() => createRecipeRequest.Description)"/>
             </MudCardContent>
             <MudCardActions>
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                           FullWidth="true">
                     Create
                 </MudButton>
             </MudCardActions>
@@ -43,20 +44,20 @@
     [Inject]
     public required ISnackbar Snackbar { get; set; }
 
-    private CreateRecipeRequest createRecipeRequest = new();
+    private readonly CreateRecipeRequest createRecipeRequest = new();
 
     private async Task OnValidSubmit(EditContext context)
     {
         await RecipeService
-        .CreateRecipeAsync(createRecipeRequest)
-        .EffectAsync(
-        created =>
-        {
-            NavigationManager.NavigateTo($"/recipes/{created.Id}");
-        },
-        err =>
-        {
-            Snackbar.Add(err.Message, Severity.Error);
-        });
+            .CreateRecipeAsync(createRecipeRequest)
+            .EffectAsync(
+            created =>
+            {
+                NavigationManager.NavigateTo($"/recipes/{created.Id}");
+            },
+            err =>
+            {
+                Snackbar.Add(err.Message, Severity.Error);
+            });
     }
 }
