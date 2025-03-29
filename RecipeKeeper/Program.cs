@@ -1,4 +1,7 @@
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using MudBlazor.Services;
 using RecipeKeeper.Components;
 using RecipeKeeper.Features.Ingredients;
@@ -9,7 +12,7 @@ using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Formatting.Json;
 using Serilog.Sinks.SystemConsole.Themes;
-using _Imports=RecipeKeeper.Client._Imports;
+using _Imports = RecipeKeeper.Client._Imports;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,14 +95,19 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 
-app.UseAntiforgery();
 app.MapControllers();
+app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(_Imports).Assembly);
+
+using (var scope = app.Services.CreateScope())
+{
+    using var context = scope.ServiceProvider.GetRequiredService<RecipeKeeperContext>();
+    await context.Database.MigrateAsync();
+}
 
 app.Run();
