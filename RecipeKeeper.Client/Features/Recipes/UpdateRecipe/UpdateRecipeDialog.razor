@@ -1,0 +1,62 @@
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="@_updateRequest">
+            <DataAnnotationsValidator/>
+            <MudStack Spacing="3">
+                <MudTextField
+                    Label="Name"
+                    @bind-Value="_updateRequest.Name"
+                    For="@(() => _updateRequest.Name)"/>
+                <MudTextField
+                    Label="Author"
+                    @bind-Value="_updateRequest.Author"
+                    For="@(() => _updateRequest.Author)"/>
+                <MudSelect @bind-Value="_updateRequest.Difficulty" Label="Difficulty" Clearable="true">
+                    <MudSelectItem T="string" Value="@("Easy")">Easy</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Medium")">Medium</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Hard")">Hard</MudSelectItem>
+                </MudSelect>
+                <MudTextField
+                    Label="Time"
+                    @bind-Value="_updateRequest.EstimatedDuration"
+                    For="@(() => _updateRequest.EstimatedDuration)"/>
+                <MudTextField
+                    Label="Description"
+                    @bind-Value="_updateRequest.Description"
+                    For="@(() => _updateRequest.Description)"
+                    AutoGrow="true"/>
+            </MudStack>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Submit</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public required RecipeResponse Recipe { get; set; }
+
+    [CascadingParameter]
+    public required IMudDialogInstance MudDialog { get; set; }
+
+    private UpdateRecipeRequest _updateRequest = new();
+
+    protected override void OnInitialized()
+    {
+        _updateRequest = new UpdateRecipeRequest
+        {
+            Author = Recipe.Author,
+            Description = Recipe.Description,
+            Difficulty = Recipe.Difficulty,
+            EstimatedDuration = Recipe.EstimatedDuration,
+            Name = Recipe.Name,
+        };
+    }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(_updateRequest));
+
+    private void Cancel() => MudDialog.Cancel();
+}
