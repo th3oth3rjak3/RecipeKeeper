@@ -3,12 +3,13 @@ using MudBlazor.Services;
 using RecipeKeeper.Components;
 using RecipeKeeper.Features.Ingredients;
 using RecipeKeeper.Features.Instructions;
-using RecipeKeeper.Features.Persistence;
 using RecipeKeeper.Features.Recipes;
+using RecipeKeeper.Persistence;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Formatting.Json;
 using Serilog.Sinks.SystemConsole.Themes;
+using _Imports=RecipeKeeper.Client._Imports;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,23 +21,23 @@ builder.Host.UseSerilog((ctx, config) =>
         config
             .MinimumLevel.Debug()
             .WriteTo.Console(
-                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
-                theme: AnsiConsoleTheme.Code,
-                applyThemeToRedirectedOutput: true);
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+            theme: AnsiConsoleTheme.Code,
+            applyThemeToRedirectedOutput: true);
     }
     else
     {
         config
             .MinimumLevel.Information()
             .WriteTo.Console(
-                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
-                theme: AnsiConsoleTheme.Code,
-                applyThemeToRedirectedOutput: true)
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+            theme: AnsiConsoleTheme.Code,
+            applyThemeToRedirectedOutput: true)
             .WriteTo.File(
-                new JsonFormatter(),
-                "logs/recipe_keeper.json",
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 30);
+            new JsonFormatter(),
+            "logs/recipe_keeper.json",
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: 30);
     }
 });
 
@@ -58,11 +59,11 @@ builder.Services.AddDbContext<RecipeKeeperContext>(options =>
 {
 
     options.UseSqlite(
-        builder.Configuration.GetConnectionString("RecipeKeeper"),
-        opts =>
-        {
-            opts.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-        });
+    builder.Configuration.GetConnectionString("RecipeKeeper"),
+    opts =>
+    {
+        opts.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+    });
 });
 
 builder.Services.AddOpenApi("index");
@@ -77,16 +78,16 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(options =>
     {
         options
-        .WithTitle("Recipe Keeper API")
-        .WithTheme(ScalarTheme.Saturn)
-        .WithSidebar(true)
-        .WithDarkMode(true)
-        .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+            .WithTitle("Recipe Keeper API")
+            .WithTheme(ScalarTheme.Saturn)
+            .WithSidebar(true)
+            .WithDarkMode(true)
+            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
     });
 }
 else
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseExceptionHandler("/Error", true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -99,6 +100,6 @@ app.MapControllers();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(RecipeKeeper.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(_Imports).Assembly);
 
 app.Run();

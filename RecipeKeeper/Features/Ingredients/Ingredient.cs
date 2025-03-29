@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using RecipeKeeper.Client.Features.Ingredients;
 using RecipeKeeper.Client.Features.Ingredients.CreateIngredient;
-using RecipeKeeper.Client.Features.Ingredients.GetIngredient;
-using RecipeKeeper.Client.Features.Ingredients.UpdateIngredient;
 using RecipeKeeper.Features.Recipes;
 
 namespace RecipeKeeper.Features.Ingredients;
@@ -9,20 +8,20 @@ namespace RecipeKeeper.Features.Ingredients;
 public class Ingredient
 {
     [Required]
-    public int Id { get; set; }
+    public int Id { get; init; }
 
     [Required]
-    public int RecipeId { get; set; }
+    public int RecipeId { get; init; }
 
     [Required]
-    public Recipe? Recipe { get; set; }
+    public Recipe? Recipe { get; init; }
 
     [Required]
-    public required int Position { get; set; }
+    public required int Position { get; init; }
 
     [Required]
     [StringLength(500, MinimumLength = 1)]
-    public required string Description { get; set; }
+    public required string Description { get; init; }
 }
 
 public static class IngredientExtensions
@@ -35,23 +34,7 @@ public static class IngredientExtensions
             Description = request.Description ?? "",
         };
 
-    public static CreateIngredientResponse ToCreateResponse(this Ingredient ingredient) =>
-        new()
-        {
-            Id = ingredient.Id,
-            Position = ingredient.Position,
-            Description = ingredient.Description,
-        };
-
-    public static GetIngredientResponse ToGetResponse(this Ingredient ingredient) =>
-        new()
-        {
-            Id = ingredient.Id,
-            Position = ingredient.Position,
-            Description = ingredient.Description,
-        };
-
-    public static UpdateIngredientResponse ToUpdateResponse(this Ingredient ingredient) =>
+    public static IngredientResponse ToResponse(this Ingredient ingredient) =>
         new()
         {
             Id = ingredient.Id,

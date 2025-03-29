@@ -1,25 +1,25 @@
 using Functional;
 using Microsoft.EntityFrameworkCore;
+using RecipeKeeper.Client.Features.Recipes;
 using RecipeKeeper.Client.Features.Recipes.CreateRecipe;
 using RecipeKeeper.Client.Features.Recipes.GetRecipes;
 using RecipeKeeper.Client.Features.Recipes.UpdateRecipe;
-using RecipeKeeper.Features.Persistence;
+using RecipeKeeper.Persistence;
 using static Functional.Prelude;
 
 namespace RecipeKeeper.Features.Recipes;
 
 /// <summary>
-/// The service used to handle recipe requests.
+///     The service used to handle recipe requests.
 /// </summary>
 /// <param name="context">The database context.</param>
-public class RecipeService(RecipeKeeperContext context)
-{
+public class RecipeService(RecipeKeeperContext context) {
     /// <summary>
-    /// Get a recipe by its id.
+    ///     Get a recipe by its id.
     /// </summary>
     /// <param name="id">The recipe id.</param>
     /// <returns>A recipe or an exception.</returns>
-    public async Task<Result<GetRecipeResponse, Exception>> GetRecipeAsync(int id) =>
+    public async Task<Result<RecipeResponse, Exception>> GetRecipeAsync(int id) =>
         await TryAsync(() =>
             context
                 .Recipes
@@ -27,11 +27,11 @@ public class RecipeService(RecipeKeeperContext context)
                 .Include(recipe => recipe.Instructions)
                 .Where(recipe => recipe.Id == id)
                 .FirstAsync()
-                .PipeAsync(recipe => recipe.ToGetResponse()));
+                .PipeAsync(recipe => recipe.ToResponse()));
 
 
     /// <summary>
-    /// Search for recipes using a query string.
+    ///     Search for recipes using a query string.
     /// </summary>
     /// <param name="query">The query string to use for searching.</param>
     /// <param name="includeIngredients">When true, search includes ingredient descriptions.</param>
@@ -42,49 +42,44 @@ public class RecipeService(RecipeKeeperContext context)
         bool? includeIngredients,
         bool? includeInstructions
     ) =>
-    await TryAsync(async () =>
-    {
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            return context.Recipes.Select(recipe => recipe.ToSearchResponse()).ToList();
-        }
+        await TryAsync(async () => {
+            if (string.IsNullOrWhiteSpace(query)){
+                return context.Recipes.Select(recipe => recipe.ToSearchResponse()).ToList();
+            }
 
-        var recipeIds = new HashSet<int>();
+            var recipeIds = new HashSet<int>();
 
-        if (includeIngredients == true && query is not null)
-        {
-            var idsFromIngredients = await context
-                .Ingredients
-                .AsNoTracking()
-                .Where(ingredient =>
-                    ingredient
-                    .Description
-                    .ToUpper()
-                    .Contains(query.ToUpper()))
-                .Select(ingredient => ingredient.RecipeId)
-                .ToListAsync();
+            if (includeIngredients == true){
+                var idsFromIngredients = await context
+                    .Ingredients
+                    .AsNoTracking()
+                    .Where(ingredient =>
+                        ingredient
+                            .Description
+                            .ToUpper()
+                            .Contains(query.ToUpper()))
+                    .Select(ingredient => ingredient.RecipeId)
+                    .ToListAsync();
 
-            idsFromIngredients.ForEach(id => recipeIds.Add(id));
-        }
+                idsFromIngredients.ForEach(id => recipeIds.Add(id));
+            }
 
-        if (includeInstructions == true && query is not null)
-        {
-            var idsFromInstructions = await context
-                .Instructions
-                .AsNoTracking()
-                .Where(instruction =>
-                    instruction
-                    .Description
-                    .ToUpper()
-                    .Contains(query.ToUpper()))
-                .Select(instruction => instruction.RecipeId)
-                .ToListAsync();
+            if (includeInstructions == true){
+                var idsFromInstructions = await context
+                    .Instructions
+                    .AsNoTracking()
+                    .Where(instruction =>
+                        instruction
+                            .Description
+                            .ToUpper()
+                            .Contains(query.ToUpper()))
+                    .Select(instruction => instruction.RecipeId)
+                    .ToListAsync();
 
-            idsFromInstructions.ForEach(id => recipeIds.Add(id));
-        }
+                idsFromInstructions.ForEach(id => recipeIds.Add(id));
+            }
 
-        if (query is not null)
-        {
+
             var idsFromRecipes = await context
                 .Recipes
                 .AsNoTracking()
@@ -96,19 +91,18 @@ public class RecipeService(RecipeKeeperContext context)
                 .ToListAsync();
 
             idsFromRecipes.ForEach(id => recipeIds.Add(id));
-        }
 
-        return context.Recipes.Where(recipe => recipeIds.Contains(recipe.Id)).Select(recipe => recipe.ToSearchResponse()).ToList();
-    });
+
+            return context.Recipes.Where(recipe => recipeIds.Contains(recipe.Id)).Select(recipe => recipe.ToSearchResponse()).ToList();
+        });
 
     /// <summary>
-    /// Create a new recipe.
+    ///     Create a new recipe.
     /// </summary>
     /// <param name="request">The properties of the recipe to be created.</param>
     /// <returns>The created recipe or an exception.</returns>
-    public async Task<Result<CreateRecipeResponse, Exception>> CreateRecipeAsync(CreateRecipeRequest request) =>
-        await TryAsync(async () =>
-        {
+    public async Task<Result<RecipeResponse, Exception>> CreateRecipeAsync(CreateRecipeRequest request) =>
+        await TryAsync(async () => {
             var recipe = request.ToRecipe();
             context.Recipes.Add(recipe);
             await context.SaveChangesAsync();
@@ -116,19 +110,18 @@ public class RecipeService(RecipeKeeperContext context)
             return await context
                 .Recipes
                 .Where(r => r.Id == recipe.Id)
-                .Select(recipe => recipe.ToCreateResponse())
+                .Select(found => found.ToResponse())
                 .FirstAsync();
         });
 
     /// <summary>
-    /// Update a recipe.
+    ///     Update a recipe.
     /// </summary>
     /// <param name="id">The id of the recipe to update.</param>
     /// <param name="request">The properties of the request to be updated.</param>
     /// <returns>The updated recipe or an exception.</returns>
-    public async Task<Result<UpdateRecipeResponse, Exception>> UpdateRecipeAsync(int id, UpdateRecipeRequest request) =>
-        await TryAsync(async () =>
-        {
+    public async Task<Result<RecipeResponse, Exception>> UpdateRecipeAsync(int id, UpdateRecipeRequest request) =>
+        await TryAsync(async () => {
             var found = await context.Recipes.Where(recipe => recipe.Id == id).FirstAsync();
             context.Entry(found).CurrentValues.SetValues(request);
             await context.SaveChangesAsync();
@@ -139,18 +132,17 @@ public class RecipeService(RecipeKeeperContext context)
                 .Include(recipe => recipe.Instructions)
                 .Where(recipe => recipe.Id == id)
                 .FirstAsync()
-                .PipeAsync(recipe => recipe.ToUpdateResponse());
+                .PipeAsync(recipe => recipe.ToResponse());
 
             return updated;
         });
 
     /// <summary>
-    /// Delete a recipe by its id.
+    ///     Delete a recipe by its id.
     /// </summary>
     /// <param name="id">The id of the recipe.</param>
     public async Task<Result<Unit, Exception>> DeleteRecipeAsync(int id) =>
-        await TryAsync(async () =>
-        {
+        await TryAsync(async () => {
             var foundRecipe = await context.Recipes.Where(recipe => recipe.Id == id).FirstAsync();
             context.Recipes.Remove(foundRecipe);
             await context.SaveChangesAsync();

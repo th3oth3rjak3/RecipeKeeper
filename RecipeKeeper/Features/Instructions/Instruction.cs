@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using RecipeKeeper.Client.Features.Instructions;
 using RecipeKeeper.Client.Features.Instructions.CreateInstruction;
-using RecipeKeeper.Client.Features.Instructions.GetInstruction;
-using RecipeKeeper.Client.Features.Instructions.UpdateInstruction;
 using RecipeKeeper.Features.Recipes;
 
 namespace RecipeKeeper.Features.Instructions;
@@ -9,20 +8,20 @@ namespace RecipeKeeper.Features.Instructions;
 public class Instruction
 {
     [Required]
-    public int Id { get; set; }
+    public int Id { get; init; }
 
     [Required]
-    public int RecipeId { get; set; }
+    public int RecipeId { get; init; }
 
     [Required]
-    public Recipe? Recipe { get; set; }
+    public Recipe? Recipe { get; init; }
 
     [Required]
-    public required int Position { get; set; }
+    public required int Position { get; init; }
 
     [Required]
     [StringLength(500, MinimumLength = 1)]
-    public required string Description { get; set; }
+    public required string Description { get; init; }
 }
 
 public static class InstructionExtensions
@@ -35,23 +34,7 @@ public static class InstructionExtensions
             Description = request.Description ?? "",
         };
 
-    public static CreateInstructionResponse ToCreateResponse(this Instruction instruction) =>
-        new()
-        {
-            Id = instruction.Id,
-            Position = instruction.Position,
-            Description = instruction.Description,
-        };
-
-    public static GetInstructionResponse ToGetResponse(this Instruction instruction) =>
-        new()
-        {
-            Id = instruction.Id,
-            Position = instruction.Position,
-            Description = instruction.Description,
-        };
-
-    public static UpdateInstructionResponse ToUpdateResponse(this Instruction instruction) =>
+    public static InstructionResponse ToResponse(this Instruction instruction) =>
         new()
         {
             Id = instruction.Id,

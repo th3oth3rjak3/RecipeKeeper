@@ -2,38 +2,47 @@
     <MudCardHeader>
         <MudText Typo="Typo.h5">Search Recipes</MudText>
     </MudCardHeader>
-    <MudDivider />
+    <MudDivider/>
     <MudCardContent>
         <MudTextField T="string" @bind-Text="@QueryString" Label="Search Query" Clearable="true"
-            ClearIcon="@Icons.Material.Filled.Clear" />
+                      ClearIcon="@Icons.Material.Filled.Clear"/>
         <MudCheckBox Class="mt-5" Style="max-width: fit-content;" Label="Include Ingredients?"
-            @bind-Value="@IncludeIngredients" />
-        <MudCheckBox Style="max-width: fit-content;" Label="Include Instructions?" @bind-Value="@IncludeInstructions" />
+                     @bind-Value="@IncludeIngredients"/>
+        <MudCheckBox Style="max-width: fit-content;" Label="Include Instructions?" @bind-Value="@IncludeInstructions"/>
     </MudCardContent>
     <MudCardActions>
         <MudButton Color="Color.Primary" Variant="Variant.Text" OnClick="HandleSearch" FullWidth="true">
             Search
         </MudButton>
     </MudCardActions>
+    @if (Loading)
+    {
+        <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Class="my-7"/>
+    }
 </MudCard>
 
 @code {
-    [Parameter, EditorRequired]
+    [Parameter]
+    [EditorRequired]
     public required EventCallback<SearchRecipeResult> OnSearch { get; set; }
 
+    private bool Loading { get; set; }
     private string? QueryString { get; set; }
     private bool IncludeIngredients { get; set; }
     private bool IncludeInstructions { get; set; }
 
     private async Task HandleSearch()
     {
+        Loading = true;
+        StateHasChanged();
         var result = new SearchRecipeResult
         {
             QueryString = QueryString,
             IncludeIngredients = IncludeIngredients,
-            IncludeInstructions = IncludeInstructions
+            IncludeInstructions = IncludeInstructions,
         };
 
         await OnSearch.InvokeAsync(result);
+        Loading = false;
     }
 }
