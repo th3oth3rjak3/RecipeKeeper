@@ -230,7 +230,12 @@
         var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var parameters = new DialogParameters<CreateInstructionDialog>
         {
-            { x => x.NextPosition, Recipe.Instructions.Max(i => i.Position) + 1 },
+            {
+                x => x.NextPosition,
+                Recipe.Instructions.Any()
+                    ? Recipe.Instructions.Max(i => i.Position) + 1
+                    : 1
+            },
         };
         var dialog = await DialogService.ShowAsync<CreateInstructionDialog>("Create Instruction", parameters, options);
         var result = await dialog.Result;
@@ -258,7 +263,12 @@
         var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var parameters = new DialogParameters<CreateIngredientDialog>
         {
-            { x => x.NextPosition, Recipe.Ingredients.Max(i => i.Position) + 1 },
+            {
+                x => x.NextPosition,
+                Recipe.Ingredients.Any()
+                    ? Recipe.Ingredients.Max(i => i.Position) + 1
+                    : 1
+            },
         };
         var dialog = await DialogService.ShowAsync<CreateIngredientDialog>("Create Ingredient", parameters, options);
         var result = await dialog.Result;
