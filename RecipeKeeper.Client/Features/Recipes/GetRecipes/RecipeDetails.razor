@@ -14,7 +14,7 @@
         <MudExpansionPanels MultiExpansion="true">
             <MudExpansionPanel TitleContent="@RecipeHeader">
                 <MudStack>
-                    <MudDivider Class="mb-2"/>
+                    <MudDivider Class="mb-2" />
                     @if (Recipe.Author is not null)
                     {
                         <MudText Typo="Typo.body1">@($"Author: {Recipe.Author}")</MudText>
@@ -34,41 +34,38 @@
                 </MudStack>
             </MudExpansionPanel>
             <MudExpansionPanel TitleContent="@IngredientHeader">
-                <MudDivider Class="mb-2"/>
+                <MudDivider Class="mb-2" />
                 @foreach (var ingredient in Recipe.Ingredients)
                 {
                     <MudStack Row="true" AlignItems="AlignItems.Center">
                         <MudIconButton Icon="@(GetIcon(CompletedIngredients, ingredient.Id))" Size="Size.Medium"
-                                       OnClick="@(() => ToggleIngredient(ingredient.Id))"/>
+                            OnClick="@(() => ToggleIngredient(ingredient.Id))" />
                         <MudText Typo="Typo.body2"
-                                 Style="@(CompletedIngredients.Contains(ingredient.Id) ? "text-decoration: line-through" : "")">
-                            @($"{ingredient.Position}. {ingredient.Description}")</MudText>
-                        <MudSpacer/>
+                            Style="@(CompletedIngredients.Contains(ingredient.Id) ? "text-decoration: line-through" : "")">
+                            @($"{ingredient.Position}) {ingredient.Description}")</MudText>
+                        <MudSpacer />
                         <MudStack Row="true">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           OnClick="() => UpdateIngredient(ingredient)"/>
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           OnClick="() => DeleteIngredient(ingredient)"/>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="() => UpdateIngredient(ingredient)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => DeleteIngredient(ingredient)" />
                         </MudStack>
                     </MudStack>
                 }
             </MudExpansionPanel>
             <MudExpansionPanel TitleContent="@InstructionHeader">
-                <MudDivider Class="mb-2"/>
+                <MudDivider Class="mb-2" />
                 @foreach (var instruction in Recipe.Instructions)
                 {
                     <MudStack Row="true" AlignItems="AlignItems.Center">
                         <MudIconButton Icon="@(GetIcon(CompletedInstructions, instruction.Id))" Size="Size.Medium"
-                                       OnClick="@(() => ToggleInstruction(instruction.Id))"/>
+                            OnClick="@(() => ToggleInstruction(instruction.Id))" />
                         <MudText Typo="Typo.body2"
-                                 Style="@(CompletedInstructions.Contains(instruction.Id) ? "text-decoration: line-through" : "")">
-                            @($"{instruction.Position}. {instruction.Description}")</MudText>
-                        <MudSpacer/>
+                            Style="@(CompletedInstructions.Contains(instruction.Id) ? "text-decoration: line-through" : "")">
+                            @($"{instruction.Position}) {instruction.Description}")</MudText>
+                        <MudSpacer />
                         <MudStack Row="true">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           OnClick="() => UpdateInstruction(instruction)"/>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="() => UpdateInstruction(instruction)" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           OnClick="() => DeleteInstruction(instruction)"/>
+                                OnClick="() => DeleteInstruction(instruction)" />
                         </MudStack>
                     </MudStack>
                 }
@@ -104,38 +101,38 @@
     private HashSet<int> CompletedInstructions { get; } = [];
 
     private RenderFragment RecipeHeader =>
-        @<MudStack Row="true" AlignItems="AlignItems.Center">
-            <MudText>
-                @Recipe?.Name
-            </MudText>
-            <MudSpacer/>
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="OnRecipeEdited"/>
-            <MudIconButton Icon="@Icons.Material.Filled.Delete" Class="mr-4" OnClick="OnRecipeDeleted"/>
+    @<MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudText>
+            @Recipe?.Name
+        </MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="OnRecipeEdited" />
+        <MudIconButton Icon="@Icons.Material.Filled.Delete" Class="mr-4" OnClick="OnRecipeDeleted" />
 
-        </MudStack>;
+    </MudStack>;
 
     private RenderFragment InstructionHeader =>
-        @<MudStack Row="true" AlignItems="AlignItems.Center">
-            <MudText>
-                Instructions
-            </MudText>
-            <MudSpacer/>
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Class="mr-4" OnClick="AddInstruction"/>
-        </MudStack>;
+    @<MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudText>
+            Instructions
+        </MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Class="mr-4" OnClick="AddInstruction" />
+    </MudStack>;
 
     private RenderFragment IngredientHeader =>
-        @<MudStack Row="true" AlignItems="AlignItems.Center">
-            <MudText>
-                Ingredients
-            </MudText>
-            <MudSpacer/>
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Class="mr-4" OnClick="AddIngredient"/>
-        </MudStack>;
+    @<MudStack Row="true" AlignItems="AlignItems.Center">
+        <MudText>
+            Ingredients
+        </MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Class="mr-4" OnClick="AddIngredient" />
+    </MudStack>;
 
     private static string GetIcon(HashSet<int> ids, int id) =>
-        ids.Contains(id)
-            ? Icons.Material.Filled.Clear
-            : Icons.Material.Filled.Check;
+    ids.Contains(id)
+    ? Icons.Material.Filled.Clear
+    : Icons.Material.Filled.Check;
 
     private RecipeResponse? Recipe { get; set; }
 
@@ -145,16 +142,16 @@
     {
         Loading = true;
         await RecipeService.GetRecipeAsync(RecipeId)
-            .EffectAsync(
-            recipe =>
-            {
-                Recipe = recipe;
-                InvokeAsync(StateHasChanged);
-            },
-            err =>
-            {
-                Snackbar.Add(err.Message, Severity.Error);
-            });
+        .EffectAsync(
+        recipe =>
+        {
+            Recipe = recipe;
+            InvokeAsync(StateHasChanged);
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
         Loading = false;
     }
 
@@ -186,16 +183,16 @@
 
         // Delete Recipe
         await RecipeService
-            .DeleteRecipeAsync(Recipe.Id)
-            .EffectAsync(
-            _ =>
-            {
-                NavigationManager.NavigateTo("/");
-            },
-            err =>
-            {
-                Snackbar.Add(err.Message, Severity.Error);
-            });
+        .DeleteRecipeAsync(Recipe.Id)
+        .EffectAsync(
+        _ =>
+        {
+            NavigationManager.NavigateTo("/");
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
     }
 
     private async Task OnRecipeEdited()
@@ -204,24 +201,24 @@
 
         var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var parameters = new DialogParameters<UpdateRecipeDialog>
-        {
-            { x => x.Recipe, Recipe },
-        };
+{
+{ x => x.Recipe, Recipe },
+};
         var dialog = await DialogService.ShowAsync<UpdateRecipeDialog>($"Edit '{Recipe.Name}'", parameters, options);
         var result = await dialog.Result;
         if (result is null || result.Canceled || result.Data is null) return;
 
         var data = (UpdateRecipeRequest)result.Data;
         await RecipeService.UpdateRecipeAsync(Recipe.Id, data)
-            .EffectAsync(
-            ok =>
-            {
-                Recipe = ok;
-            },
-            err =>
-            {
-                Snackbar.Add(err.Message, Severity.Error);
-            });
+        .EffectAsync(
+        ok =>
+        {
+            Recipe = ok;
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
     }
 
     private async Task AddInstruction()
@@ -229,32 +226,32 @@
         if (Recipe is null) return;
         var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var parameters = new DialogParameters<CreateInstructionDialog>
-        {
-            {
-                x => x.NextPosition,
-                Recipe.Instructions.Any()
-                    ? Recipe.Instructions.Max(i => i.Position) + 1
-                    : 1
-            },
-        };
+{
+{
+x => x.NextPosition,
+Recipe.Instructions.Any()
+? Recipe.Instructions.Max(i => i.Position) + 1
+: 1
+},
+};
         var dialog = await DialogService.ShowAsync<CreateInstructionDialog>("Create Instruction", parameters, options);
         var result = await dialog.Result;
         if (result is null || result.Canceled || result.Data is null) return;
         var data = (CreateInstructionRequest)result.Data;
 
         await InstructionService
-            .CreateInstructionAsync(Recipe.Id, data)
-            .EffectAsync(
-            instruction =>
-            {
-                Recipe.Instructions.Add(instruction);
-                Recipe.Instructions = Recipe.Instructions.OrderBy(i => i.Position).ToList();
-                InvokeAsync(StateHasChanged);
-            },
-            err =>
-            {
-                Snackbar.Add(err.Message, Severity.Error);
-            });
+        .CreateInstructionAsync(Recipe.Id, data)
+        .EffectAsync(
+        instruction =>
+        {
+            Recipe.Instructions.Add(instruction);
+            Recipe.Instructions = Recipe.Instructions.OrderBy(i => i.Position).ToList();
+            InvokeAsync(StateHasChanged);
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
     }
 
     private async Task AddIngredient()
@@ -262,32 +259,32 @@
         if (Recipe is null) return;
         var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var parameters = new DialogParameters<CreateIngredientDialog>
-        {
-            {
-                x => x.NextPosition,
-                Recipe.Ingredients.Any()
-                    ? Recipe.Ingredients.Max(i => i.Position) + 1
-                    : 1
-            },
-        };
+{
+{
+x => x.NextPosition,
+Recipe.Ingredients.Any()
+? Recipe.Ingredients.Max(i => i.Position) + 1
+: 1
+},
+};
         var dialog = await DialogService.ShowAsync<CreateIngredientDialog>("Create Ingredient", parameters, options);
         var result = await dialog.Result;
         if (result is null || result.Canceled || result.Data is null) return;
         var data = (CreateIngredientRequest)result.Data;
 
         await IngredientService
-            .CreateIngredientAsync(Recipe.Id, data)
-            .EffectAsync(
-            ingredient =>
-            {
-                Recipe.Ingredients.Add(ingredient);
-                Recipe.Ingredients = Recipe.Ingredients.OrderBy(i => i.Position).ToList();
-                InvokeAsync(StateHasChanged);
-            },
-            err =>
-            {
-                Snackbar.Add(err.Message, Severity.Error);
-            });
+        .CreateIngredientAsync(Recipe.Id, data)
+        .EffectAsync(
+        ingredient =>
+        {
+            Recipe.Ingredients.Add(ingredient);
+            Recipe.Ingredients = Recipe.Ingredients.OrderBy(i => i.Position).ToList();
+            InvokeAsync(StateHasChanged);
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
     }
 
     private async Task UpdateIngredient(IngredientResponse ingredient)
@@ -295,28 +292,28 @@
         if (Recipe is null) return;
         var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var parameters = new DialogParameters<UpdateIngredientDialog>
-        {
-            { x => x.Ingredient, ingredient },
-        };
+{
+{ x => x.Ingredient, ingredient },
+};
         var dialog = await DialogService.ShowAsync<UpdateIngredientDialog>("Update Ingredient", parameters, options);
         var result = await dialog.Result;
         if (result is null || result.Canceled || result.Data is null) return;
         var data = (UpdateIngredientRequest)result.Data;
 
         await IngredientService
-            .UpdateIngredientAsync(Recipe.Id, ingredient.Id, data)
-            .EffectAsync(
-            updatedIngredient =>
-            {
-                Recipe.Ingredients.Remove(ingredient);
-                Recipe.Ingredients.Add(updatedIngredient);
-                Recipe.Ingredients = Recipe.Ingredients.OrderBy(i => i.Position).ToList();
-                InvokeAsync(StateHasChanged);
-            },
-            err =>
-            {
-                Snackbar.Add(err.Message, Severity.Error);
-            });
+        .UpdateIngredientAsync(Recipe.Id, ingredient.Id, data)
+        .EffectAsync(
+        updatedIngredient =>
+        {
+            Recipe.Ingredients.Remove(ingredient);
+            Recipe.Ingredients.Add(updatedIngredient);
+            Recipe.Ingredients = Recipe.Ingredients.OrderBy(i => i.Position).ToList();
+            InvokeAsync(StateHasChanged);
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
 
     }
 
@@ -325,28 +322,28 @@
         if (Recipe is null) return;
         var options = new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false };
         var parameters = new DialogParameters<UpdateInstructionDialog>
-        {
-            { x => x.Instruction, instruction },
-        };
+{
+{ x => x.Instruction, instruction },
+};
         var dialog = await DialogService.ShowAsync<UpdateInstructionDialog>("Update Instruction", parameters, options);
         var result = await dialog.Result;
         if (result is null || result.Canceled || result.Data is null) return;
         var data = (UpdateInstructionRequest)result.Data;
 
         await InstructionService
-            .UpdateInstructionAsync(Recipe.Id, instruction.Id, data)
-            .EffectAsync(
-            updatedInstruction =>
-            {
-                Recipe.Instructions.Remove(instruction);
-                Recipe.Instructions.Add(updatedInstruction);
-                Recipe.Instructions = Recipe.Instructions.OrderBy(i => i.Position).ToList();
-                InvokeAsync(StateHasChanged);
-            },
-            err =>
-            {
-                Snackbar.Add(err.Message, Severity.Error);
-            });
+        .UpdateInstructionAsync(Recipe.Id, instruction.Id, data)
+        .EffectAsync(
+        updatedInstruction =>
+        {
+            Recipe.Instructions.Remove(instruction);
+            Recipe.Instructions.Add(updatedInstruction);
+            Recipe.Instructions = Recipe.Instructions.OrderBy(i => i.Position).ToList();
+            InvokeAsync(StateHasChanged);
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
     }
 
     private async Task DeleteIngredient(IngredientResponse ingredient)
@@ -361,17 +358,17 @@
 
         // Delete Ingredient
         await IngredientService
-            .DeleteIngredientAsync(Recipe.Id, ingredient.Id)
-            .EffectAsync(
-            _ =>
-            {
-                Recipe.Ingredients.Remove(ingredient);
-                InvokeAsync(StateHasChanged);
-            },
-            err =>
-            {
-                Snackbar.Add(err.Message, Severity.Error);
-            });
+        .DeleteIngredientAsync(Recipe.Id, ingredient.Id)
+        .EffectAsync(
+        _ =>
+        {
+            Recipe.Ingredients.Remove(ingredient);
+            InvokeAsync(StateHasChanged);
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
     }
 
     private async Task DeleteInstruction(InstructionResponse instruction)
@@ -386,16 +383,16 @@
 
         // Delete Ingredient
         await InstructionService
-            .DeleteInstructionAsync(Recipe.Id, instruction.Id)
-            .EffectAsync(
-            _ =>
-            {
-                Recipe.Instructions.Remove(instruction);
-                InvokeAsync(StateHasChanged);
-            },
-            err =>
-            {
-                Snackbar.Add(err.Message, Severity.Error);
-            });
+        .DeleteInstructionAsync(Recipe.Id, instruction.Id)
+        .EffectAsync(
+        _ =>
+        {
+            Recipe.Instructions.Remove(instruction);
+            InvokeAsync(StateHasChanged);
+        },
+        err =>
+        {
+            Snackbar.Add(err.Message, Severity.Error);
+        });
     }
 }
